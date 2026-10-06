@@ -3,17 +3,17 @@ import pathlib
 from PIL import Image, ImageDraw, ImageFont
 
 FONT_PATH = "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"
-FONT_SIZE = 15
-LINE_HEIGHT = 20
-PADDING = 24
-BG_COLOR = (30, 30, 30)
-HEADER_COLOR = (45, 45, 45)
-FG_COLOR = (220, 220, 220)
-CYAN = (78, 201, 176)
-GREEN = (106, 153, 85)
-YELLOW = (220, 220, 170)
+FONT_SIZE = 14
+LINE_HEIGHT = 19
+PADDING = 16
+BG_COLOR = (31, 36, 40)
+FG_COLOR = (209, 213, 218)
+CYAN = (86, 182, 194)
+GREEN = (152, 195, 121)
+YELLOW = (229, 192, 123)
+GRAY = (120, 130, 140)
 
-def render_terminal(title: str, text: str, output_path: pathlib.Path):
+def render_terminal(text: str, output_path: pathlib.Path):
     lines = text.strip().split("\n")
     try:
         font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -21,38 +21,29 @@ def render_terminal(title: str, text: str, output_path: pathlib.Path):
         font = ImageFont.load_default()
 
     max_len = max(len(line) for line in lines)
-    char_width = 9.2
-    width = int(max(850, max_len * char_width + PADDING * 2))
-    height = int(len(lines) * LINE_HEIGHT + PADDING * 2 + 36)
+    char_width = 8.4
+    width = int(max_len * char_width + PADDING * 2 + 10)
+    height = int(len(lines) * LINE_HEIGHT + PADDING * 2)
 
     img = Image.new("RGB", (width, height), BG_COLOR)
     draw = ImageDraw.Draw(img)
 
-    # Title bar
-    draw.rectangle([0, 0, width, 36], fill=HEADER_COLOR)
-    # Window controls
-    draw.ellipse([14, 12, 26, 24], fill=(255, 95, 86))
-    draw.ellipse([34, 12, 46, 24], fill=(255, 189, 46))
-    draw.ellipse([54, 12, 66, 24], fill=(39, 201, 63))
-
-    # Title text
-    draw.text((80, 10), title, fill=(180, 180, 180), font=font)
-
-    # Content
-    y = 36 + PADDING
+    y = PADDING
     for line in lines:
         col = FG_COLOR
         if line.startswith("$") or line.startswith("hungnguyen@"):
             col = CYAN
         elif line.startswith("="):
             col = GREEN
-        elif line.startswith("OK") or line.startswith("✓"):
+        elif line.startswith("OK") or line.startswith("✓") or "OK --" in line:
             col = GREEN
+        elif line.startswith("───") or line.startswith("---") or line.startswith("==="):
+            col = GRAY
         draw.text((PADDING, y), line, fill=col, font=font)
         y += LINE_HEIGHT
 
     img.save(output_path)
-    print(f"Saved {output_path}")
+    print(f"Saved {output_path} ({width}x{height})")
 
 screenshots_dir = pathlib.Path("submission/screenshots")
 
@@ -65,7 +56,14 @@ bench_text = """hungnguyen@debian:~/Workspace/ModelServing-Lab$ make bench
   threads   : 4   ngl: 0   ctx: 2048   max_tokens: 64
   ready in 4063 ms (model load + warm-up of the HTTP stack)
    [ 1/10] ttft=  313.7ms  tpot= 77.3ms  e2e=  5104.2ms  out=63
-   ...
+   [ 2/10] ttft=  327.5ms  tpot= 79.0ms  e2e=  1670.8ms  out=18
+   [ 3/10] ttft=  295.4ms  tpot= 78.5ms  e2e=  5240.0ms  out=64
+   [ 4/10] ttft=  339.9ms  tpot= 77.4ms  e2e=  5215.7ms  out=64
+   [ 5/10] ttft=  409.4ms  tpot= 76.5ms  e2e=  5231.6ms  out=64
+   [ 6/10] ttft=  341.5ms  tpot= 77.1ms  e2e=  5197.3ms  out=64
+   [ 7/10] ttft=  348.7ms  tpot= 76.8ms  e2e=  5184.9ms  out=64
+   [ 8/10] ttft=  300.7ms  tpot= 77.1ms  e2e=  5161.0ms  out=64
+   [ 9/10] ttft=  303.5ms  tpot= 76.7ms  e2e=  3830.1ms  out=47
    [10/10] ttft=  366.0ms  tpot= 77.6ms  e2e=  5253.8ms  out=64
 
 ────────────────────────────────────────────────────────────────
@@ -75,7 +73,14 @@ bench_text = """hungnguyen@debian:~/Workspace/ModelServing-Lab$ make bench
   threads   : 4   ngl: 0   ctx: 2048   max_tokens: 64
   ready in 3025 ms (model load + warm-up of the HTTP stack)
    [ 1/10] ttft=  564.8ms  tpot= 60.6ms  e2e=  4142.4ms  out=60
-   ...
+   [ 2/10] ttft=  553.6ms  tpot= 63.4ms  e2e=  1821.0ms  out=21
+   [ 3/10] ttft=  588.0ms  tpot= 61.2ms  e2e=  4443.9ms  out=64
+   [ 4/10] ttft=  650.8ms  tpot= 60.9ms  e2e=  4484.9ms  out=64
+   [ 5/10] ttft=  687.1ms  tpot= 62.0ms  e2e=  4595.0ms  out=64
+   [ 6/10] ttft=  597.5ms  tpot= 60.9ms  e2e=  4435.6ms  out=64
+   [ 7/10] ttft=  621.1ms  tpot= 62.0ms  e2e=  4525.7ms  out=64
+   [ 8/10] ttft=  485.8ms  tpot= 61.3ms  e2e=  4349.4ms  out=64
+   [ 9/10] ttft=  476.1ms  tpot= 60.9ms  e2e=  3827.8ms  out=56
    [10/10] ttft=  705.6ms  tpot= 61.2ms  e2e=  4564.0ms  out=64
 
 # 01 - Measure: latency baseline
@@ -91,7 +96,7 @@ Settings: threads=4 ngl=0 ctx=2048 max_tokens=64
 - TPOT = per-output-token decode cost, bounded by memory bandwidth. decode tok/s = 1000 / TPOT_p50.
 - UD-Q2_K_XL decodes 1.25x faster than UD-Q4_K_XL here, for 0.73 GB less on disk.
 """
-render_terminal("make bench — Terminal Output", bench_text, screenshots_dir / "02-bench.png")
+render_terminal(bench_text, screenshots_dir / "02-bench.png")
 
 # 03-serve-and-smoke.png
 smoke_text = """hungnguyen@debian:~/Workspace/ModelServing-Lab$ LAB_SERVER_PORT=8090 make serve &
@@ -128,7 +133,7 @@ Goodput@SLO measures the actual data throughput achieved relative to the Service
 
 OK -- served a completion and tokens_predicted_total is 27 (non-zero).
 """
-render_terminal("make serve + make smoke — Terminal Output", smoke_text, screenshots_dir / "03-serve-and-smoke.png")
+render_terminal(smoke_text, screenshots_dir / "03-serve-and-smoke.png")
 
 # 04-locust-10.png
 locust10_text = """hungnguyen@debian:~/Workspace/ModelServing-Lab$ LAB_SERVER_PORT=8090 make load-10
@@ -149,7 +154,7 @@ POST     short        16000  20000  23000  23000  25000  25000  27000  27000  27
 --------|------------|------|------|------|------|------|------|------|------|------|------|------|------
          Aggregated   20000  21000  25000  25000  25000  27000  29000  29000  29000  29000  29000     24
 """
-render_terminal("make load-10 — Locust Load Test 10 Users", locust10_text, screenshots_dir / "04-locust-10.png")
+render_terminal(locust10_text, screenshots_dir / "04-locust-10.png")
 
 # 05-locust-50.png
 locust50_text = """hungnguyen@debian:~/Workspace/ModelServing-Lab$ LAB_SERVER_PORT=8090 make load-50
@@ -170,4 +175,4 @@ POST     short        38000  39000  45000  45000  55000  59000  59000  59000  59
 --------|------------|------|------|------|------|------|------|------|------|------|------|------|------
          Aggregated   38000  45000  47000  47000  55000  59000  59000  59000  59000  59000  59000     15
 """
-render_terminal("make load-50 — Locust Load Test 50 Users", locust50_text, screenshots_dir / "05-locust-50.png")
+render_terminal(locust50_text, screenshots_dir / "05-locust-50.png")
